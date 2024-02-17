@@ -75,7 +75,7 @@ public class CharacterControlBase : MonoBehaviour
         Turn(moveDir);
         Move(moveDir);
         Friction();
-        SideVelocityDamping();
+        //SideVelocityDamping();
         ApplyForces();
         Debug.Log(RB.velocity.magnitude);
     }
@@ -88,6 +88,12 @@ public class CharacterControlBase : MonoBehaviour
     /// Supplemental Method Declarations
     /// 
     /// 
+    /// ************
+    /// stuff to add:
+    /// the turn speed needs to be calculated real time depending on the player speed in TurnSpeedCalc()
+    /// the player acceleration needs to be affected be strong turns, potentially implement this in some helper method used in Move().
+    /// Both the above systems should only be present on ground.
+    /// *****************
     /// 
     /// 
     /// </summary>
@@ -107,6 +113,11 @@ public class CharacterControlBase : MonoBehaviour
         velocity = Vector3.zero;
     }
 
+    private void TurnSpeedCalc()
+    {
+            
+    }
+
     //this function rotates the player to face the inputted direction whilst leving them facing that way otherwise
     private void Turn(Vector2 direction)
     {
@@ -123,6 +134,13 @@ public class CharacterControlBase : MonoBehaviour
             Quaternion rotation = Quaternion.AngleAxis(rawRotationAngle * Mathf.Rad2Deg, playerTransform.up);
             Vector3 finalDirection = Vector3.Slerp(playerTransform.forward, ((rotation * cameraFlatForward).normalized), turnSpeed);
             playerTransform.forward = finalDirection;
+
+            //side sway elimination (works)
+            Vector3 tempV = RB.velocity;
+            RB.velocity = Vector3.zero;
+            RB.velocity = finalDirection * tempV.magnitude;
+
+            
         } 
     }
 
@@ -161,15 +179,6 @@ public class CharacterControlBase : MonoBehaviour
 
             }
         }
-    }
-
-    // this funtion needs to be made to function properly so that velocity perpendicular to the players current orientation is canceled
-    private void SideVelocityDamping() 
-    {
-        Vector3 planarRBVelocity = Vector3.ProjectOnPlane(RB.velocity, playerTransform.up);
-        float angle = Vector3.Angle(planarRBVelocity,playerTransform.forward);
-        float dampening = planarRBVelocity.magnitude * Mathf.Sin(angle) * sidewaysDampening;
-        velocity -= playerTransform.right.normalized * dampening;
     }
 
     // Checks if player is in grounding range
