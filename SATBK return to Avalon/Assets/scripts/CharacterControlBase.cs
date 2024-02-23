@@ -15,7 +15,7 @@ public class CharacterControlBase : MonoBehaviour
     [SerializeField] float acceleration;
     [SerializeField] float accelerationFriction;
     [SerializeField] float groundMaxSpeed;
-    [SerializeField, Range(0,1)] float turnSpeed;
+    float turnSpeed;
     [SerializeField, Range(0, 1)] float sidewaysDampening;
 
     [Header("Ground detection")]
@@ -72,12 +72,13 @@ public class CharacterControlBase : MonoBehaviour
         StateSwitch();
         if (playerState == State.Ground) { Snap(); }
         Vector2 moveDir = GetMovementVectorNormalized();
+        TurnSpeedCalc();
         Turn(moveDir);
         Move(moveDir);
         Friction();
         //SideVelocityDamping();
         ApplyForces();
-        Debug.Log(RB.velocity.magnitude);
+        //Debug.Log("speed diff: " + Mathf.Clamp(0.3f * Mathf.Pow(Mathf.Pow(0.075f / 0.3f, 1 / groundMaxSpeed), RB.velocity.magnitude), 0.025f, 0.3f));
     }
 
     /// <summary>
@@ -115,7 +116,9 @@ public class CharacterControlBase : MonoBehaviour
 
     private void TurnSpeedCalc()
     {
-            
+        //turnSpeed = Mathf.Clamp((float)((groundMaxSpeed - RB.velocity.magnitude) / groundMaxSpeed + 0.08), 0.025f, 0.65f);
+        float b = Mathf.Pow(0.075f / 0.3f, 1 / groundMaxSpeed);
+        turnSpeed = Mathf.Clamp(0.3f * Mathf.Pow(b,RB.velocity.magnitude), 0.025f, 0.3f);
     }
 
     //this function rotates the player to face the inputted direction whilst leving them facing that way otherwise
@@ -151,9 +154,24 @@ public class CharacterControlBase : MonoBehaviour
     }
 
     // Adds force in forward direction if player is moving
-    private void Move(Vector3 moveDirection)
+    private void Move(Vector2 direction)
     {
-        if (moveDirection.magnitude > 0) { velocity += acceleration * playerTransform.forward.normalized; }
+        if (direction.magnitude > 0) {
+            float rawInputRotationAngle = Mathf.Abs(Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg);
+            Vector3 cameraFlatForward = Vector3.ProjectOnPlane(cameraTransform.forward, playerTransform.up).normalized;
+            Vector3 playerFlatForward = Vector3.ProjectOnPlane(playerTransform.forward, playerTransform.up).normalized;
+            float angleDiff = Mathf.Abs(Vector3.Angle(cameraFlatForward, playerFlatForward));
+            Debug.Log("inputAngle: " + (rawInputRotationAngle - angleDiff));
+            if ((rawInputRotationAngle - angleDiff) < 50)
+            {
+                velocity += acceleration * playerTransform.forward.normalized;
+            } 
+            else
+            {
+                //velocity += acceleration / 4 * playerTransform.forward.normalized;
+            }
+            
+        }
     }
 
     // funtion to apply friction to motion of player on ground 
