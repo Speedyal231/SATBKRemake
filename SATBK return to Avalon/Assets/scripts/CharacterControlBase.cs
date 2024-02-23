@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class CharacterControlBase : MonoBehaviour
@@ -117,8 +118,8 @@ public class CharacterControlBase : MonoBehaviour
     private void TurnSpeedCalc()
     {
         //turnSpeed = Mathf.Clamp((float)((groundMaxSpeed - RB.velocity.magnitude) / groundMaxSpeed + 0.08), 0.025f, 0.65f);
-        float b = Mathf.Pow(0.075f / 0.3f, 1 / groundMaxSpeed);
-        turnSpeed = Mathf.Clamp(0.3f * Mathf.Pow(b,RB.velocity.magnitude), 0.025f, 0.3f);
+        float b = Mathf.Pow(0.15f / 0.6f, 1 / (groundMaxSpeed/2));
+        turnSpeed = Mathf.Clamp(0.6f * Mathf.Pow(b,RB.velocity.magnitude), 0.15f, 0.6f);
     }
 
     //this function rotates the player to face the inputted direction whilst leving them facing that way otherwise
@@ -129,21 +130,39 @@ public class CharacterControlBase : MonoBehaviour
         {
             // calculate the forward orientation of the camera
             Vector3 cameraFlatForward = Vector3.ProjectOnPlane(cameraTransform.forward, playerTransform.up).normalized;
-
+            Vector3 playerFlatForward = Vector3.ProjectOnPlane(playerTransform.forward, playerTransform.up).normalized;
             // calculate the angle of rotation of the player
-            float rawRotationAngle = Mathf.Atan2(direction.x, direction.y);
+            float rawRotationAngle = Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg;
+            float rawInputRotationAngle = Mathf.Abs(Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg);
+            float angleDiff = Mathf.Abs(Vector3.Angle(cameraFlatForward, playerFlatForward));
 
             // convert the rotation to a quaternion and apply the rotation with interpolation to smooth motion
-            Quaternion rotation = Quaternion.AngleAxis(rawRotationAngle * Mathf.Rad2Deg, playerTransform.up);
+            Quaternion rotation = Quaternion.AngleAxis(rawRotationAngle, playerTransform.up);
             Vector3 finalDirection = Vector3.Slerp(playerTransform.forward, ((rotation * cameraFlatForward).normalized), turnSpeed);
-            playerTransform.forward = finalDirection;
-
-            //side sway elimination (works)
             Vector3 tempV = RB.velocity;
-            RB.velocity = Vector3.zero;
-            RB.velocity = finalDirection * tempV.magnitude;
 
-            
+            if (Mathf.Abs(rawInputRotationAngle - angleDiff) >= 125 && RB.velocity.magnitude > groundMaxSpeed/10)
+            {
+                //nada
+            }
+            else if (Mathf.Abs(rawInputRotationAngle - angleDiff) >= 50 && RB.velocity.magnitude > groundMaxSpeed / 10)
+            {
+                playerTransform.forward = finalDirection;
+                //side sway elimination (works)
+                RB.velocity = Vector3.zero;
+                Debug.Log(Vector3.Dot(finalDirection.normalized, tempV));
+                RB.velocity = finalDirection.normalized * Vector3.Dot(finalDirection.normalized, tempV);
+                velocity -= finalDirection.normalized * Vector3.Dot(finalDirection.normalized, tempV) * 0.05f;
+            }
+            else 
+            {
+                playerTransform.forward = finalDirection;
+
+                //side sway elimination (works)
+                RB.velocity = Vector3.zero;
+                Debug.Log(Vector3.Dot(finalDirection.normalized, tempV));
+                RB.velocity = finalDirection.normalized * Vector3.Dot(finalDirection.normalized, tempV);
+            }
         } 
     }
 
@@ -161,14 +180,14 @@ public class CharacterControlBase : MonoBehaviour
             Vector3 cameraFlatForward = Vector3.ProjectOnPlane(cameraTransform.forward, playerTransform.up).normalized;
             Vector3 playerFlatForward = Vector3.ProjectOnPlane(playerTransform.forward, playerTransform.up).normalized;
             float angleDiff = Mathf.Abs(Vector3.Angle(cameraFlatForward, playerFlatForward));
-            Debug.Log("inputAngle: " + (rawInputRotationAngle - angleDiff));
-            if ((rawInputRotationAngle - angleDiff) < 50)
+            Debug.Log("inputAngle: " + Mathf.Abs(rawInputRotationAngle - angleDiff));
+            if (Mathf.Abs(rawInputRotationAngle - angleDiff) < 125)
             {
                 velocity += acceleration * playerTransform.forward.normalized;
             } 
             else
             {
-                //velocity += acceleration / 4 * playerTransform.forward.normalized;
+                velocity -= acceleration * playerTransform.forward.normalized;
             }
             
         }

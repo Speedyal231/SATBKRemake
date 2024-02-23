@@ -210,7 +210,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   m_LocalRotation: {x: 0.16606218, y: -0, z: -0, w: 0.98611534}
-  m_LocalPosition: {x: -0.24154282, y: 2.9172487, z: -22.520302}
+  m_LocalPosition: {x: -0.24154282, y: 4.11, z: -22.520302}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -275,7 +275,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 1628620402}
   camera: {fileID: 330585546}
-  camSpeed: 0.01
+  camSpeed: 0.5
+  camDistance: 7
+  camUpMax: 2
 --- !u!1 &381838552
 GameObject:
   m_ObjectHideFlags: 0
@@ -1888,7 +1890,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1628620402}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1.1627514, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1941,8 +1943,8 @@ MonoBehaviour:
   cameraTransform: {fileID: 330585546}
   sphereCollider: {fileID: 1628620406}
   acceleration: 1.5
-  accelerationFriction: 0.9
-  groundMaxSpeed: 40
+  accelerationFriction: 1.1
+  groundMaxSpeed: 35
   sidewaysDampening: 0.392
   rayOriginOffset: 0.1
   groundHitRange: 0.2
