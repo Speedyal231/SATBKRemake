@@ -19,6 +19,7 @@ public class CharacterControlBase : MonoBehaviour
     [SerializeField] float turnSpeedMax = 0.25f;
     [SerializeField] float turnSpeedEX = 0.015f; 
     [SerializeField] float turnSpeedMin = 0.025f;
+    float turnAngleStop = 135;
     float turnSpeed;
     [SerializeField, Range(0, 1)] float sidewaysDampening;
 
@@ -108,7 +109,9 @@ public class CharacterControlBase : MonoBehaviour
     private Vector2 GetMovementVectorNormalized()
     {
         Vector2 inputVector = playerInputActions.Keyboard.Move.ReadValue<Vector2>();
+        Debug.Log("pre calc vector" + inputVector);
         inputVector = inputVector.magnitude > 1 ? inputVector.normalized : inputVector;
+        Debug.Log("post calc vector" + inputVector);
         return inputVector;
     }
 
@@ -144,17 +147,17 @@ public class CharacterControlBase : MonoBehaviour
             Vector3 finalDirection = Vector3.Slerp(playerTransform.forward, ((rotation * cameraFlatForward).normalized), turnSpeed);
             Vector3 tempV = RB.velocity;
 
-            if (Mathf.Abs(rawInputRotationAngle - angleDiff) >= 125 && RB.velocity.magnitude > groundMaxSpeed/10)
+            if (Mathf.Abs(rawInputRotationAngle - angleDiff) >= turnAngleStop && RB.velocity.magnitude > groundMaxSpeed/10)
             {
                 //nada
             }
-            else if (Mathf.Abs(rawInputRotationAngle - angleDiff) >= 50 && RB.velocity.magnitude > groundMaxSpeed / 10)
+            else if (Mathf.Abs(rawInputRotationAngle - angleDiff) >= 70 && RB.velocity.magnitude > groundMaxSpeed / 10)
             {
                 playerTransform.forward = finalDirection;
 
                 //side sway elimination (works)
                 RB.velocity = Vector3.zero;
-                Debug.Log(Vector3.Dot(finalDirection.normalized, tempV));
+                //Debug.Log(Vector3.Dot(finalDirection.normalized, tempV));
                 RB.velocity = finalDirection.normalized * Vector3.Dot(finalDirection.normalized, tempV);
                 velocity -= finalDirection.normalized * Vector3.Dot(finalDirection.normalized, tempV) * 0.05f;
             }
@@ -164,7 +167,7 @@ public class CharacterControlBase : MonoBehaviour
 
                 //side sway elimination (works)
                 RB.velocity = Vector3.zero;
-                Debug.Log(Vector3.Dot(finalDirection.normalized, tempV));
+                //Debug.Log(Vector3.Dot(finalDirection.normalized, tempV));
                 RB.velocity = finalDirection.normalized * Vector3.Dot(finalDirection.normalized, tempV);
             }
         } 
@@ -184,14 +187,14 @@ public class CharacterControlBase : MonoBehaviour
             Vector3 cameraFlatForward = Vector3.ProjectOnPlane(cameraTransform.forward, playerTransform.up).normalized;
             Vector3 playerFlatForward = Vector3.ProjectOnPlane(playerTransform.forward, playerTransform.up).normalized;
             float angleDiff = Mathf.Abs(Vector3.Angle(cameraFlatForward, playerFlatForward));
-            Debug.Log("inputAngle: " + Mathf.Abs(rawInputRotationAngle - angleDiff));
-            if (Mathf.Abs(rawInputRotationAngle - angleDiff) < 125)
+            //Debug.Log("inputAngle: " + Mathf.Abs(rawInputRotationAngle - angleDiff));
+            if (Mathf.Abs(rawInputRotationAngle - angleDiff) < turnAngleStop)
             {
-                velocity += acceleration * playerTransform.forward.normalized;
+                velocity += acceleration * playerTransform.forward.normalized * direction.magnitude;
             } 
             else
             {
-                velocity -= acceleration * playerTransform.forward.normalized;
+                velocity -= acceleration * playerTransform.forward.normalized * direction.magnitude;
             }
             
         }
