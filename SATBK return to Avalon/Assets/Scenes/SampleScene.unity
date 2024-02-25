@@ -1943,8 +1943,11 @@ MonoBehaviour:
   cameraTransform: {fileID: 330585546}
   sphereCollider: {fileID: 1628620406}
   acceleration: 1.5
-  accelerationFriction: 1.1
+  accelerationFriction: 1.2
   groundMaxSpeed: 35
+  turnSpeedMax: 0.25
+  turnSpeedEX: 0.15
+  turnSpeedMin: 0.025
   sidewaysDampening: 0.392
   rayOriginOffset: 0.1
   groundHitRange: 0.2

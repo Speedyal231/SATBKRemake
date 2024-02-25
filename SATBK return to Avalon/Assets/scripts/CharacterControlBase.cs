@@ -16,6 +16,9 @@ public class CharacterControlBase : MonoBehaviour
     [SerializeField] float acceleration;
     [SerializeField] float accelerationFriction;
     [SerializeField] float groundMaxSpeed;
+    [SerializeField] float turnSpeedMax = 0.25f;
+    [SerializeField] float turnSpeedEX = 0.015f; 
+    [SerializeField] float turnSpeedMin = 0.025f;
     float turnSpeed;
     [SerializeField, Range(0, 1)] float sidewaysDampening;
 
@@ -118,8 +121,8 @@ public class CharacterControlBase : MonoBehaviour
     private void TurnSpeedCalc()
     {
         //turnSpeed = Mathf.Clamp((float)((groundMaxSpeed - RB.velocity.magnitude) / groundMaxSpeed + 0.08), 0.025f, 0.65f);
-        float b = Mathf.Pow(0.15f / 0.6f, 1 / (groundMaxSpeed/2));
-        turnSpeed = Mathf.Clamp(0.6f * Mathf.Pow(b,RB.velocity.magnitude), 0.15f, 0.6f);
+        float b = Mathf.Pow(turnSpeedEX / turnSpeedMax, 1 / (groundMaxSpeed/2));
+        turnSpeed = Mathf.Clamp(turnSpeedMax * Mathf.Pow(b,RB.velocity.magnitude), turnSpeedMin, turnSpeedMax);
     }
 
     //this function rotates the player to face the inputted direction whilst leving them facing that way otherwise
@@ -148,6 +151,7 @@ public class CharacterControlBase : MonoBehaviour
             else if (Mathf.Abs(rawInputRotationAngle - angleDiff) >= 50 && RB.velocity.magnitude > groundMaxSpeed / 10)
             {
                 playerTransform.forward = finalDirection;
+
                 //side sway elimination (works)
                 RB.velocity = Vector3.zero;
                 Debug.Log(Vector3.Dot(finalDirection.normalized, tempV));
