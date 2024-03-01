@@ -10,11 +10,23 @@ public class Cameramovement : MonoBehaviour
     [SerializeField] float camSpeed;
     [SerializeField] float camDistance;
     [SerializeField] float camUpMax;
- 
+    [SerializeField] float lookSpeed;
+    [SerializeField] float lookDistance;
+    private PlayerInputActions playerInputActions;
+
+    private void Awake()
+    {
+        //enable player input script.
+        playerInputActions = new PlayerInputActions();
+        playerInputActions.Enable();
+    }
+
     // Update is called once per frame
     void FixedUpdate()
     {
-        CamFollow();
+        //CamFollow();
+        Vector2 look = GetLookVectorNormalized();
+        CamLook(look);
     }
 
     private void CamFollow()
@@ -26,5 +38,28 @@ public class Cameramovement : MonoBehaviour
         newpos = newpos - player.transform.up * upoffset.magnitude + player.transform.up * camUpMax;
         camera.position = newpos;
         camera.rotation = Quaternion.LookRotation(playerPos - camera.position, player.transform.up);
+    }
+
+    private void CamLook(Vector2 look)
+    {
+        Vector3 playerPos = player.transform.position + player.transform.up * 2;
+        camera.rotation = Quaternion.LookRotation(playerPos - camera.position, player.transform.up);
+
+        Vector3 newpos = camera.position + (playerPos - camera.position) - (playerPos - camera.position).normalized * camDistance;
+
+        //camera.position = newpos;
+        camera.RotateAround(playerPos, player.transform.up, look.x * lookDistance);
+        camera.RotateAround(playerPos, player.transform.right, look.y * lookDistance);
+        
+
+    }
+
+    private Vector2 GetLookVectorNormalized()
+    {
+        Vector2 inputVector = playerInputActions.Keyboard.CameraLook.ReadValue<Vector2>() / 100;
+        //Debug.Log("pre calc vector" + inputVector);
+        inputVector = inputVector.magnitude > 1 ? inputVector.normalized : inputVector;
+        Debug.Log("post calc vector" + inputVector);
+        return inputVector;
     }
 }

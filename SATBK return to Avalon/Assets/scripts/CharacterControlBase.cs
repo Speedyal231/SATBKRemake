@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
 
 public class CharacterControlBase : MonoBehaviour
@@ -109,9 +108,9 @@ public class CharacterControlBase : MonoBehaviour
     private Vector2 GetMovementVectorNormalized()
     {
         Vector2 inputVector = playerInputActions.Keyboard.Move.ReadValue<Vector2>();
-        Debug.Log("pre calc vector" + inputVector);
+        //Debug.Log("pre calc vector" + inputVector);
         inputVector = inputVector.magnitude > 1 ? inputVector.normalized : inputVector;
-        Debug.Log("post calc vector" + inputVector);
+        //Debug.Log("post calc vector" + inputVector);
         return inputVector;
     }
 
