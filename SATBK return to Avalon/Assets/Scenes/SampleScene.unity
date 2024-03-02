@@ -276,11 +276,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 1628620402}
   camera: {fileID: 330585546}
-  camSpeed: 0.5
+  camSpeed: 0.3
   camDistance: 7
   camUpMax: 2
   lookSpeed: 0
-  lookDistance: 5
+  lookDistance: 0.3
+  yinvert: 1
 --- !u!114 &330585549
 MonoBehaviour:
   m_ObjectHideFlags: 0

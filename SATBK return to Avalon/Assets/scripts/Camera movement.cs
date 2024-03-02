@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class Cameramovement : MonoBehaviour
@@ -7,11 +8,12 @@ public class Cameramovement : MonoBehaviour
     
     [SerializeField] GameObject player;
     [SerializeField] Transform camera;
-    [SerializeField] float camSpeed;
+    [SerializeField, Range(0,1)] float camSpeed;
     [SerializeField] float camDistance;
     [SerializeField] float camUpMax;
     [SerializeField] float lookSpeed;
     [SerializeField] float lookDistance;
+    [SerializeField] bool yinvert;
     private PlayerInputActions playerInputActions;
     Vector3 currCamPos;
 
@@ -32,9 +34,17 @@ public class Cameramovement : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        //CamFollow();
+        
         Vector2 look = GetLookVectorNormalized();
-        CamLook2(look);
+        if (look.magnitude > 0)
+        {
+            CamLook2(look);
+        } 
+        else
+        {
+            CamFollow();
+        }
+        CamCorrection();
     }
 
     private void CamFollow()
@@ -66,18 +76,27 @@ public class Cameramovement : MonoBehaviour
         //may need to flip x and y
         float angleX = look.x * lookDistance;
         float catenaX = 2 * camDistance * Mathf.Sin(angleX / 2);
-        Vector3 xChange = camera.forward.normalized * catenaX * Mathf.Cos(90 - (angleX / 2)) + camera.right.normalized * catenaX * Mathf.Sin(90 - (angleX / 2));
+        Vector3 xChange = camera.forward.normalized * (camDistance * (1 - Mathf.Cos(angleX))) + camera.right.normalized * (camDistance * Mathf.Sin(angleX));
 
         float angleY = look.y * lookDistance;
         float catenaY = 2 * camDistance * Mathf.Sin(angleY / 2);
-        Vector3 YChange = camera.forward.normalized * catenaY * Mathf.Cos(90 - (angleY / 2)) + camera.up.normalized * catenaY * Mathf.Sin(90 - (angleY / 2));
+        Vector3 yChange = camera.forward.normalized * (camDistance * (1 - Mathf.Cos(angleY))) + camera.up.normalized * (camDistance * Mathf.Sin(angleY));
 
-        Vector3 totalChange = YChange + xChange;
+        Vector3 totalChange = yChange + xChange;
 
         currCamPos += totalChange;
 
-        camera.position = player.transform.position + currCamPos;
+        camera.position = Vector3.Slerp(camera.position, player.transform.position + currCamPos, camSpeed);
         camera.rotation = Quaternion.LookRotation(playerPos - camera.position, player.transform.up);
+    }
+
+    private void CamCorrection()
+    {
+        Vector3 playerPos = player.transform.position + player.transform.up * 2;
+        if ((playerPos - camera.position).magnitude != camDistance)
+        {
+            camera.position += camera.forward.normalized * ((playerPos - camera.position).magnitude - camDistance);
+        }
     }
 
     private Vector2 GetLookVectorNormalized()
@@ -86,6 +105,13 @@ public class Cameramovement : MonoBehaviour
         //Debug.Log("pre calc vector" + inputVector);
         inputVector = inputVector.magnitude > 1 ? inputVector.normalized : inputVector;
         Debug.Log("post calc vector" + inputVector);
-        return inputVector;
+        if (yinvert)
+        {
+            return new Vector3(inputVector.x,-inputVector.y);
+        } 
+        else
+        {
+            return inputVector;
+        }
     }
 }
