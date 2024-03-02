@@ -282,6 +282,7 @@ MonoBehaviour:
   lookSpeed: 0
   lookDistance: 0.3
   yinvert: 1
+  lockedCamTime: 5
 --- !u!114 &330585549
 MonoBehaviour:
   m_ObjectHideFlags: 0

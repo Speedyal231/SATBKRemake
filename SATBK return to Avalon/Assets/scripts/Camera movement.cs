@@ -14,8 +14,10 @@ public class Cameramovement : MonoBehaviour
     [SerializeField] float lookSpeed;
     [SerializeField] float lookDistance;
     [SerializeField] bool yinvert;
+    [SerializeField] float lockedCamTime;
     private PlayerInputActions playerInputActions;
     Vector3 currCamPos;
+    float currentLockedCamTime;
 
     private void Awake()
     {
@@ -34,9 +36,10 @@ public class Cameramovement : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        
+        Count();
         Vector2 look = GetLookVectorNormalized();
-        if (look.magnitude > 0)
+        camChangeInit(look);
+        if (currentLockedCamTime > 0)
         {
             CamLook2(look);
         } 
@@ -53,7 +56,8 @@ public class Cameramovement : MonoBehaviour
         Vector3 newpos = Vector3.Slerp(camera.position, camera.position + (playerPos - camera.position) - (playerPos - camera.position).normalized * camDistance, camSpeed);
         Vector3 upoffset = Vector3.ProjectOnPlane(playerPos - newpos, Vector3.ProjectOnPlane(-(playerPos - newpos), player.transform.up));
 
-        newpos = newpos - player.transform.up * upoffset.magnitude + player.transform.up * camUpMax;
+        newpos = Vector3.Slerp(newpos, newpos - player.transform.up * upoffset.magnitude + player.transform.up * camUpMax, 0.1f);
+        currCamPos = playerPos - camera.position;
         camera.position = newpos;
         camera.rotation = Quaternion.LookRotation(playerPos - camera.position, player.transform.up);
     }
@@ -113,5 +117,19 @@ public class Cameramovement : MonoBehaviour
         {
             return inputVector;
         }
+    }
+
+    private void camChangeInit(Vector2 Look) 
+    {
+        if ( Look.magnitude > 0.05)
+        {
+            currentLockedCamTime = lockedCamTime;
+        }
+    }
+
+    private void Count()
+    {
+        if (currentLockedCamTime > 0)
+            currentLockedCamTime -= Time.fixedDeltaTime;
     }
 }
