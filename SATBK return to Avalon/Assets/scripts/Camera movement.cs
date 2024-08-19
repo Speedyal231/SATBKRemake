@@ -39,14 +39,7 @@ public class Cameramovement : MonoBehaviour
         Count();
         Vector2 look = GetLookVectorNormalized();
         camChangeInit(look);
-        if (currentLockedCamTime > 0)
-        {
-            CamLook2(look);
-        } 
-        else
-        {
-            CamFollow();
-        }
+        CamLook2(look);
         CamCorrection();
     }
 
@@ -90,7 +83,8 @@ public class Cameramovement : MonoBehaviour
 
         currCamPos += totalChange;
 
-        camera.position = Vector3.Slerp(camera.position, player.transform.position + currCamPos, camSpeed);
+        camera.position = player.transform.position + currCamPos;
+        //camera.position = Vector3.Slerp(camera.position, player.transform.position + currCamPos, camSpeed);
         camera.rotation = Quaternion.LookRotation(playerPos - camera.position, player.transform.up);
     }
 
